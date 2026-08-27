@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>快速排序三种写法动画演示</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft Yahei",sans-serif;}
+body{background:#f4f7fa;max-width:1200px;margin:20px auto;padding:0 16px;}
+h1{text-align:center;color:#223344;margin-bottom:16px;font-size:24px;}
+.desc{background:#fff;padding:18px 22px;border-radius:10px;box-shadow:0 2px 10px #00000012;margin-bottom:16px;line-height:1.7;}
+.desc h3{color:#2374c9;margin-bottom:8px;}
+.wrapper{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 10px #00000012;}
+#canvasBox{width:100%;height:340px;border:1px solid #dde2e8;border-radius:8px;background:#fafbfc;margin-bottom:14px;}
+canvas{display:block;}
+.ctrlRow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+button{padding:8px 16px;border:none;border-radius:6px;background:#2374c9;color:#fff;font-size:14px;cursor:pointer;}
+button:disabled{background:#97a6b8;cursor:not-allowed;}
+select{padding:7px 12px;font-size:14px;border:1px solid #ccc;border-radius:6px;}
+#msg{min-height:42px;font-size:15px;color:#334155;}
+</style>
+</head>
+<body>
+<h1>快速排序三种实现动画演示</h1>
+<div class="desc">
+<h3>📚三种快速排序原理</h3>
+<p><strong>1. Lomuto前后指针法</strong>：最容易理解，i记录小于pivot区域边界，j向前扫描，小于基准就交换i、j。</p>
+<p><strong>2. Hoare原始双指针交换法</strong>：经典原版，左右双向指针，左找大，右找小，二者交换；相遇位置作为基准落点，交换基准元素。交换次数更少，效率高。</p>
+<p><strong>3. 挖坑填坑法</strong>：把基准保存，把右侧小于基准元素填到左边坑位，再把左侧大于基准填到右侧坑位；最后基准填入最后的坑。没有频繁swap，赋值代替交换。</p>
+<p>颜色：<span style="color:#e63946">红色=pivot基准</span>｜<span style="color:#f77f00">橙色=j扫描指针</span>｜<span style="color:#2a9d8f">绿色=i边界指针</span>｜<span style="color:#9b5de5">紫色=坑位hole</span></p>
+</div>
+<div class="wrapper">
+<div id="canvasBox"><canvas id="sortCanvas"></canvas></div>
+<div class="ctrlRow">
+<select id="algoSel">
+<option value="lomuto">Lomuto 前后指针法</option>
+<option value="hoare">Hoare 双指针交换法</option>
+<option value="hole">挖坑填坑法</option>
+</select>
+<button id="resetBtn">重置</button>
+<button id="playBtn">播放</button>
+<button id="stepBtn">单步</button>
+<button id="pauseBtn">暂停</button>
+</div>
+<div id="msg">请选择算法，点击播放或者单步查看动画</div>
+</div>
+
+<script>
+const canvas=document.getElementById("sortCanvas");
+const ctx=canvas.getContext("2d");
+const box=document.getElementById("canvasBox");
+function resize(){canvas.width=box.clientWidth;canvas.height=box.clientHeight;}
+resize();
+window.addEventListener("resize",resize);
+
+let sourceArr=[8,3,6,2,9,1,5,7,4];
+let arr=[];
+let steps=[];
+let stepIdx=0;
+let timer=null;
+
+function setMsg(s){document.getElementById("msg").innerText=s;}
+function record(a,i,j,pivotIdx,l,r,holeIdx,txt){
+    steps.push({arr:[...a],i:i,j:j,pivotIdx:pivotIdx,left:l,right:r,hole:holeIdx,msg:txt});
+}
+
+// Lomuto 前后指针法
+function genLomuto(){
+    steps=[];
+    let tmp=[...sourceArr];
+    function qs(arrIn,left,right){
+        if(left>=right) return;
+        let pivot=arrIn[right];
+        record(arrIn,-1,-1,right,left,right,-1,`选pivot=${pivot}，区间[${left},${right}]`);
+        let i=left-1;
+        for(let j=left;j<right;j++){
+            record(arrIn,i,j,right,left,right,-1,`j=${j}, arr[j]=${arrIn[j]}, pivot=${pivot}`);
+            if(arrIn[j]<=pivot){
+                i++;
+                [arrIn[i],arrIn[j]]=[arrIn[j],arrIn[i]];
+                record(arrIn,i,j,right,left,right,-1,`arr[j]<=pivot，交换i=${i},j=${j}`);
+            }
+        }
+        [arrIn[i+1],arrIn[right]]=[arrIn[right],arrIn[i+1]];
+        let pi=i+1;
+        record(arrIn,-1,-1,pi,left,right,-1,`pivot归位下标${pi}`);
+        qs(arrIn,left,pi-1);
+        qs(arrIn,pi+1,right);
+    }
+    qs(tmp,0,tmp.length-1);
+    record(tmp,-1,-1,-1,0,0,-1,"✅排序完成");
+}
+
+// Hoare双指针交换
+function genHoare(){
+    steps=[];
+    let tmp=[...sourceArr];
+    function qs(arrIn,left,right){
+        if(left>=right) return;
+        let pivot=arrIn[left];
+        record(arrIn,left,right,left,left,right,-1,`pivot=${pivot},区间[${left},${right}]`);
+        let i=left,j=right;
+        while(i<j){
+            while(i<j&&arrIn[j]>=pivot){j--;record(arrIn,i,j,left,left,right,-1,`j向左扫描 j=${j}`);}
+            while(i<j&&arrIn[i]<=pivot){i++;record(arrIn,i,j,left,left,right,-1,`i向右扫描 i=${i}`);}
+            if(i<j){
+                [arrIn[i],arrIn[j]]=[arrIn[j],arrIn[i]];
+                record(arrIn,i,j,left,left,right,-1,`交换i=${i},j=${j}`);
+            }
+        }
+        [arrIn[left],arrIn[i]]=[arrIn[i],arrIn[left]];
+        let pi=i;
+        record(arrIn,-1,-1,pi,left,right,-1,`基准归位下标${pi}`);
+        qs(arrIn,left,pi-1);
+        qs(arrIn,pi+1,right);
+    }
+    qs(tmp,0,tmp.length-1);
+    record(tmp,-1,-1,-1,0,0,-1,"✅排序完成");
+}
+
+//挖坑填坑法
+function genHole(){
+    steps=[];
+    let tmp=[...sourceArr];
+    function qs(arrIn,left,right){
+        if(left>=right) return;
+        let pivot=arrIn[left];
+        let hole=left;
+        record(arrIn,-1,-1,left,left,right,hole,`保存pivot=${pivot},初始坑hole=${hole}`);
+        let i=left,j=right;
+        while(i<j){
+            while(i<j&&arrIn[j]>=pivot){j--;record(arrIn,i,j,left,left,right,hole,`j向左扫描 j=${j}`);}
+            if(i<j){
+                arrIn[hole]=arrIn[j];
+                record(arrIn,i,j,left,left,right,hole,`填坑：arr[hole]=arr[${j}]，新坑hole=${j}`);
+                hole=j;i++;
+            }
+            while(i<j&&arrIn[i]<=pivot){i++;record(arrIn,i,j,left,left,right,hole,`i向右扫描 i=${i}`);}
+            if(i<j){
+                arrIn[hole]=arrIn[i];
+                record(arrIn,i,j,left,left,right,hole,`填坑：arr[hole]=arr[${i}]，新坑hole=${i}`);
+                hole=i;j--;
+            }
+        }
+        arrIn[hole]=pivot;
+        let pi=hole;
+        record(arrIn,-1,-1,pi,left,right,-1,`pivot填入坑位${pi}`);
+        qs(arrIn,left,pi-1);
+        qs(arrIn,pi+1,right);
+    }
+    qs(tmp,0,tmp.length-1);
+    record(tmp,-1,-1,-1,0,0,-1,"✅排序完成");
+}
+
+function draw(s){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const data=s.arr;
+    const w=canvas.width,h=canvas.height;
+    const n=data.length;
+    const gap=6;
+    const barW=(w-gap*(n+2))/n;
+    const baseY=h-60;
+    const maxV=Math.max(...data);
+    for(let idx=0;idx<n;idx++){
+        const val=data[idx];
+        const barH=val/maxV*(h-100);
+        const x=gap+idx*(barW+gap);
+        let color="#4285d4";
+        if(idx===s.pivotIdx) color="#e63946";
+        if(idx===s.j) color="#f77f00";
+        if(idx===s.i) color="#2a9d8f";
+        if(idx===s.hole) color="#9b5de5";
+        ctx.fillStyle=color;
+        ctx.fillRect(x,baseY-barH,barW,barH);
+        ctx.fillStyle="#111";
+        ctx.font="14px sans-serif";
+        ctx.textAlign="center";
+        ctx.fillText(val,x+barW/2,baseY+18);
+    }
+    setMsg(s.msg);
+}
+
+function refreshSteps(){
+    clearInterval(timer);
+    const sel=document.getElementById("algoSel").value;
+    if(sel==="lomuto") genLomuto();
+    else if(sel==="hoare") genHoare();
+    else if(sel==="hole") genHole();
+    stepIdx=0;
+    draw(steps[stepIdx]);
+}
+
+document.getElementById("algoSel").onchange=refreshSteps;
+document.getElementById("resetBtn").onclick=refreshSteps;
+document.getElementById("stepBtn").onclick=()=>{
+    clearInterval(timer);
+    if(stepIdx<steps.length-1){stepIdx++;draw(steps[stepIdx]);}
+};
+document.getElementById("playBtn").onclick=()=>{
+    clearInterval(timer);
+    if(stepIdx>=steps.length-1) stepIdx=0;
+    timer=setInterval(()=>{
+        stepIdx++;
+        draw(steps[stepIdx]);
+        if(stepIdx>=steps.length-1) clearInterval(timer);
+    },850);
+};
+document.getElementById("pauseBtn").onclick=()=>clearInterval(timer);
+
+refreshSteps();
+</script>
+</body>
+</html>
