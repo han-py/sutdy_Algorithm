@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快速排序动画演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, sans-serif;
+        }
+        body {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 0 20px;
+            background-color: #f5f7fa;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom:12px;
+        }
+        .desc-block{
+            background:#fff;
+            padding:18px 24px;
+            border-radius:10px;
+            margin-bottom:20px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.08);
+            line-height:1.7;
+        }
+        .desc-block h3{
+            margin-bottom:8px;
+            color:#2980b9;
+        }
+        .container{
+            background:#ffffff;
+            padding:24px;
+            border-radius:10px;
+            box-shadow:0 2px 12px rgba(0,0,0,0.1);
+        }
+        #canvas-wrap{
+            width:100%;
+            height:320px;
+            border:1px solid #dde2e8;
+            border-radius:8px;
+            background:#fafbfc;
+            margin-bottom:16px;
+        }
+        canvas{
+            display:block;
+        }
+        .btn-group{
+            display:flex;
+            gap:12px;
+            margin-bottom:14px;
+            flex-wrap:wrap;
+        }
+        button{
+            padding:9px 18px;
+            border:none;
+            border-radius:6px;
+            background:#2980b9;
+            color:#fff;
+            font-size:15px;
+            cursor:pointer;
+        }
+        button:disabled{
+            background:#94a3b8;
+            cursor:not-allowed;
+        }
+        #statusText{
+            font-size:15px;
+            color:#334155;
+            min-height:40px;
+        }
+    </style>
+</head>
+<body>
+<h1>快速排序 Quick Sort 动画演示</h1>
+
+<div class="desc-block">
+    <h3>📖快速排序原理文字讲解</h3>
+    <p><strong>核心思想：分治思想 + 划分 partition</strong></p>
+    <p>1. <strong>选基准 pivot</strong>：从数组选出一个元素作为基准（示例选区间最右侧元素）。</p>
+    <p>2. <strong>划分 Partition</strong>：遍历区间，小于等于 pivot 的放到左边，大于 pivot 的放到右边。一轮结束后 pivot 来到它最终的正确位置。</p>
+    <p>3. <strong>递归</strong>：对 pivot 左侧子数组、右侧子数组，重复上面选基准+划分操作，直到子区间只有0/1个元素（天然有序）。</p>
+    <p><strong>复杂度：平均 O(n log n)；最坏 O(n²)；不稳定排序；原地排序，不需要额外数组。</strong></p>
+    <p>颜色说明：<span style="color:#e74c3c">红色=基准pivot</span>｜<span style="color:#f39c12">橙色=正在比较的j指针</span>｜<span style="color:#27ae60">绿色=i指针，小于pivot区域边界</span></p>
+</div>
+
+<div class="container">
+    <div id="canvas-wrap">
+        <canvas id="sortCanvas"></canvas>
+    </div>
+    <div class="btn-group">
+        <button id="btnReset">重置数组</button>
+        <button id="btnPlay">播放动画</button>
+        <button id="btnStep">单步执行</button>
+        <button id="btnPause">暂停</button>
+    </div>
+    <div id="statusText">状态：点击播放或者单步，观察快速排序partition划分过程</div>
+</div>
+
+<script>
+    const canvas = document.getElementById('sortCanvas');
+    const ctx = canvas.getContext('2d');
+    const wrap = document.getElementById('canvas-wrap');
+
+    function resizeCanvas(){
+        canvas.width = wrap.clientWidth;
+        canvas.height = wrap.clientHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize',resizeCanvas);
+
+    let arr = [];
+    let steps = [];
+    let stepIdx = 0;
+    let timer = null;
+
+    function initArray(){
+        arr = [8,3,6,2,9,1,5,7,4];
+        generateAllSteps();
+        stepIdx=0;
+        renderCurrentStep();
+        setStatus("状态：已重置，点击播放/单步");
+    }
+
+    function recordStep(a, i, j, pivotIdx, l, r, msg){
+        steps.push({
+            arr: [...a],
+            i:i,
+            j:j,
+            pivotIdx:pivotIdx,
+            left:l,
+            right:r,
+            msg:msg
+        })
+    }
+
+    function generateAllSteps(){
+        steps=[];
+        let temp = [...arr];
+        function qs(arrIn, left, right){
+            if(left >= right) return;
+            let pivot = arrIn[right];
+            recordStep(arrIn, -1, -1, right, left, right, `选基准 pivot=${pivot}，区间[${left},${right}]`);
+            let i = left -1;
+            for(let j=left; j<right; j++){
+                recordStep(arrIn, i, j, right, left, right, `j指向${j}, arr[j]=${arrIn[j]}, pivot=${pivot}`);
+                if(arrIn[j] <= pivot){
+                    i++;
+                    [arrIn[i], arrIn[j]] = [arrIn[j], arrIn[i]];
+                    recordStep(arrIn, i, j, right, left, right, `arr[j]<=pivot，交换 i=${i}, j=${j}`);
+                }
+            }
+            [arrIn[i+1], arrIn[right]] = [arrIn[right], arrIn[i+1]];
+            let pi = i+1;
+            recordStep(arrIn, -1, -1, pi, left, right, `基准归位！pivot=${arrIn[pi]}下标${pi}`);
+            qs(arrIn, left, pi-1);
+            qs(arrIn, pi+1, right);
+        }
+        qs(temp,0,temp.length-1);
+        recordStep(temp,-1,-1,-1,0,0,"✅排序全部完成");
+    }
+
+    function renderCurrentStep(){
+        if(stepIdx >= steps.length){
+            drawArr(steps[steps.length-1]);
+            return;
+        }
+        drawArr(steps[stepIdx]);
+    }
+
+    function drawArr(s){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        const data = s.arr;
+        const w = canvas.width;
+        const h = canvas.height;
+        const count = data.length;
+        const gap = 6;
+        const barW = (w - gap*(count+2)) / count;
+        const baseY = h - 60;
+        const maxV = Math.max(...data);
+
+        for(let idx=0; idx<count; idx++){
+            const val = data[idx];
+            const barH = val / maxV * (h - 100);
+            const x = gap + idx*(barW+gap);
+            let color="#3498db";
+
+            if(idx === s.pivotIdx) color="#e74c3c";
+            if(idx === s.j) color="#f39c12";
+            if(idx === s.i) color="#27ae60";
+
+            ctx.fillStyle=color;
+            ctx.fillRect(x, baseY - barH, barW, barH);
+            ctx.fillStyle="#222";
+            ctx.font="14px sans-serif";
+            ctx.textAlign="center";
+            ctx.fillText(val, x+barW/2, baseY+18);
+        }
+        setStatus(s.msg);
+    }
+
+    function setStatus(text){
+        document.getElementById("statusText").innerText = text;
+    }
+
+    const btnReset = document.getElementById("btnReset");
+    const btnPlay = document.getElementById("btnPlay");
+    const btnStep = document.getElementById("btnStep");
+    const btnPause = document.getElementById("btnPause");
+
+    btnReset.onclick = ()=>{
+        clearInterval(timer);
+        initArray();
+    }
+
+    btnStep.onclick = ()=>{
+        clearInterval(timer);
+        if(stepIdx < steps.length-1){
+            stepIdx++;
+            renderCurrentStep();
+        }
+    }
+
+    btnPlay.onclick = ()=>{
+        if(stepIdx >= steps.length-1){
+            stepIdx=0;
+        }
+        clearInterval(timer);
+        timer = setInterval(()=>{
+            stepIdx++;
+            renderCurrentStep();
+            if(stepIdx >= steps.length-1){
+                clearInterval(timer);
+            }
+        },750)
+    }
+
+    btnPause.onclick = function(){
+        clearInterval(timer);
+    }
+
+    initArray();
+</script>
+</body>
+</html>
