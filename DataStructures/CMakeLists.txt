@@ -9,6 +9,6 @@ add_executable(DataStructures
         main.cpp)
 target_link_libraries(DataStructures)
 
-add_executable(02_QuickSort_WD
+add_executable(01_SequentialList_02_QuickSort_WD
         WangDao_2027/01_SequentialList/02_QuickSort/02_QuickSort_WD.cpp)
-target_compile_definitions(02_QuickSort_WD PRIVATE RUN_QIUCKSORT_WD)
+target_compile_definitions(01_SequentialList_02_QuickSort_WD PRIVATE RUN_QIUCKSORT_WD)
