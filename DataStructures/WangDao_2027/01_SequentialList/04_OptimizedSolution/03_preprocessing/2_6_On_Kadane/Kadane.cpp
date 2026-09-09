@@ -2,7 +2,8 @@
 #include <algorithm>
 using namespace std;
 
-int maxSubArray(int A[], int n) {
+int maxSubArray(const int A[], int n) {
+    if (n <= 0) return 0;
     int cur_max = A[0];
     int global_max = A[0];
     for (int i = 1; i < n; ++i) {
@@ -17,8 +18,8 @@ int main() {
     freopen("data.in", "r", stdin);
     freopen("data.out", "w", stdout);
 #endif
-    int A[] = {1, -2, 3, 5, -3, 4};
-    int n = 4;
-    cout << maxSubArray(A, n) << endl; // 输出：8
+    const int A[] = {1, -2, 3, 5, -3, 4};
+    const int n = sizeof(A) / sizeof(A[0]);
+    cout << maxSubArray(A, n) << endl; // 输出：9
     return 0;
 }
