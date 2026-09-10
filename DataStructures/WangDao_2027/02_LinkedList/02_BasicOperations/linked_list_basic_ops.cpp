@@ -96,40 +96,40 @@ int main() {
     freopen("data.out", "w", stdout);
 #endif
 
-    cout << "===== 1) Tail insertion: build the list in 1,2,3 order =====\n";
+    cout << "===== 1）尾插法：按 1、2、3 的顺序建表 =====\n";
     Node* L1 = CreateHeadNode();
     TailInsert(L1, {1, 2, 3});
-    PrintList(L1, "List after tail insertion:");
+    PrintList(L1, "尾插后的链表：");
 
-    cout << "===== 2) Head insertion: insert 1,2,3 and get 3,2,1 =====\n";
+    cout << "===== 2）头插法：按 1、2、3 插入，最终得到 3、2、1 =====\n";
     Node* L2 = CreateHeadNode();
     for (int x : {1, 2, 3}) {
         HeadInsert(L2, NewNode(x));
     }
-    PrintList(L2, "List after head insertion:");
+    PrintList(L2, "头插后的链表：");
 
-    cout << "===== 3) Insert p after pre: set p->next first, then pre->next =====\n";
+    cout << "===== 3）在 pre 后插入 p：先改 p->next，再改 pre->next =====\n";
     Node* L3 = CreateHeadNode();
     TailInsert(L3, {1, 3});
-    PrintList(L3, "Before insertion:");
+    PrintList(L3, "插入前：");
 
-    Node* pre = L3->next; // points to node 1
-    Node* p = NewNode(2); // node 2 to insert
+    Node* pre = L3->next; // 指向结点 1
+    Node* p = NewNode(2); // 待插入结点 2
     InsertAfter(pre, p);
-    PrintList(L3, "After inserting 2 after 1:");
+    PrintList(L3, "将 2 插入到 1 后面：");
 
-    cout << "===== 4) Delete p: update the predecessor first, then free the node =====\n";
+    cout << "===== 4）删除 p：先修改前驱指针，再释放结点 =====\n";
     Node* L4 = CreateHeadNode();
     TailInsert(L4, {1, 2, 3});
-    PrintList(L4, "Before deletion:");
+    PrintList(L4, "删除前：");
 
-    DeleteAfter(L4->next); // delete node 2
-    PrintList(L4, "After deleting 2:");
+    DeleteAfter(L4->next); // 删除结点 2
+    PrintList(L4, "删除 2 后：");
 
-    cout << "===== 5) Traverse the list from L->next =====\n";
+    cout << "===== 5）从 L->next 开始遍历链表 =====\n";
     Node* L5 = CreateHeadNode();
     TailInsert(L5, {10, 20, 30, 40});
-    cout << "Traversal result: ";
+    cout << "遍历结果：";
     for (Node* q = L5->next; q != nullptr; q = q->next) {
         cout << q->data;
         if (q->next != nullptr) {
