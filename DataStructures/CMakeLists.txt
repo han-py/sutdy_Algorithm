@@ -9,6 +9,11 @@ add_executable(DataStructures
         main.cpp)
 target_link_libraries(DataStructures)
 
+add_executable(WD_04_Graph_02_DataStructureAndTraversal_GraphStorageTraversalLearning
+        WangDao_2027/04_Graph/02_DataStructureAndTraversal/graph_storage_traversal_learning_simple.cpp)
+target_compile_options(WD_04_Graph_02_DataStructureAndTraversal_GraphStorageTraversalLearning PRIVATE -g0)
+target_link_libraries(WD_04_Graph_02_DataStructureAndTraversal_GraphStorageTraversalLearning)
+
 add_executable(WD_02_LinkedList_02_BasicOperations_LinkedList_BasicOps
         WangDao_2027/02_LinkedList/02_BasicOperations/linked_list_basic_ops.cpp)
 target_link_libraries(WD_02_LinkedList_02_BasicOperations_LinkedList_BasicOps)

@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图的存储结构与遍历讲解动画</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111a2d;
+      --panel-2: #15213a;
+      --text: #e8eefc;
+      --muted: #9fb0d1;
+      --accent: #5ad7ff;
+      --accent-2: #8bffb0;
+      --warn: #ffbf69;
+      --danger: #ff7b7b;
+      --line: rgba(255, 255, 255, 0.10);
+      --shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #15203a 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 28px 24px 10px;
+      max-width: 1460px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.8;
+      max-width: 1100px;
+    }
+
+    .top-grid {
+      max-width: 1460px;
+      margin: 0 auto;
+      padding: 8px 24px 20px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(21, 33, 58, 0.96), rgba(13, 21, 38, 0.96));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card .hd {
+      padding: 16px 18px 10px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card .hd h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(90, 215, 255, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(90, 215, 255, 0.24);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .card .bd { padding: 16px 18px 18px; }
+
+    .controls {
+      max-width: 1460px;
+      margin: 0 auto;
+      padding: 0 24px 18px;
+      display: grid;
+      grid-template-columns: 1fr auto auto auto auto auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    button, select, input[type="range"] {
+      font: inherit;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #1a2743, #10192d);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 11px 14px;
+      cursor: pointer;
+      transition: 0.18s ease;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn:hover { transform: translateY(-1px); border-color: rgba(90, 215, 255, 0.5); }
+    .btn.primary {
+      background: linear-gradient(180deg, rgba(90, 215, 255, 0.35), rgba(21, 33, 58, 1));
+      border-color: rgba(90, 215, 255, 0.55);
+      color: #eaffff;
+    }
+
+    .select, .range-wrap {
+      border: 1px solid var(--line);
+      background: rgba(17, 26, 45, 0.92);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+    }
+
+    .select { min-width: 260px; }
+
+    .range-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 300px;
+    }
+
+    .range-wrap input[type="range"] {
+      width: 180px;
+      accent-color: var(--accent);
+    }
+
+    .range-label { color: var(--muted); font-size: 13px; white-space: nowrap; }
+
+    .main-grid {
+      max-width: 1460px;
+      margin: 0 auto;
+      padding: 0 24px 22px;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+    }
+
+    .graph-box {
+      min-height: 640px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .scene-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 10px;
+    }
+
+    .scene-desc {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.9;
+      font-size: 14px;
+    }
+
+    .graph-stage {
+      position: relative;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(13, 21, 38, 0.9), rgba(9, 14, 26, 0.95));
+      overflow: hidden;
+      min-height: 520px;
+    }
+
+    svg { display: block; width: 100%; height: 100%; }
+
+    .node circle {
+      fill: #1d2d4c;
+      stroke: rgba(255, 255, 255, 0.40);
+      stroke-width: 2;
+      transition: 0.2s ease;
+    }
+
+    .node text {
+      fill: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+    }
+
+    .edge {
+      stroke: rgba(203, 223, 255, 0.34);
+      stroke-width: 3;
+      transition: 0.2s ease;
+    }
+
+    .edge.directed { marker-end: url(#arrow); }
+
+    .node.active circle {
+      fill: rgba(90, 215, 255, 0.30);
+      stroke: var(--accent);
+      filter: drop-shadow(0 0 10px rgba(90, 215, 255, 0.35));
+    }
+
+    .node.visited circle {
+      fill: rgba(139, 255, 176, 0.18);
+      stroke: var(--accent-2);
+    }
+
+    .edge.active {
+      stroke: var(--warn);
+      stroke-width: 5;
+      filter: drop-shadow(0 0 10px rgba(255, 191, 105, 0.35));
+    }
+
+    .edge.dim { opacity: 0.15; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .legend i {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(90, 215, 255, 0.4);
+    }
+
+    .detail-box {
+      min-height: 640px;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 14px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .panel h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .panel p, .panel li {
+      margin: 0;
+      line-height: 1.8;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .panel ul { margin: 8px 0 0 18px; padding: 0; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.18);
+      padding: 12px 14px;
+    }
+
+    .kpi .label { color: var(--muted); font-size: 12px; margin-bottom: 5px; }
+    .kpi .value { font-size: 18px; font-weight: 700; }
+
+    .table-wrap { overflow: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: var(--text);
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 10px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    th { background: rgba(90, 215, 255, 0.12); }
+    td.highlight, th.highlight {
+      background: rgba(255, 191, 105, 0.18);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .list-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .list-row {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .list-row.active { outline: 2px solid rgba(90, 215, 255, 0.45); }
+    .vertex-badge {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: rgba(90, 215, 255, 0.18);
+      border: 1px solid rgba(90, 215, 255, 0.35);
+      font-weight: 700;
+    }
+    .chain { color: var(--text); line-height: 1.7; }
+    .chain .arrow { color: var(--warn); font-weight: 700; }
+
+    .log-box {
+      max-width: 1460px;
+      margin: 0 auto;
+      padding: 0 24px 28px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .timeline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .step-chip {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+    .step-chip.active {
+      color: #fff;
+      background: rgba(90, 215, 255, 0.18);
+      border-color: rgba(90, 215, 255, 0.4);
+    }
+
+    .footnote {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 1140px) {
+      .top-grid, .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .controls {
+        grid-template-columns: 1fr 1fr;
+      }
+      .range-wrap { min-width: 0; }
+      .select { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>图的结构与遍历讲解动画</h1>
+    <div class="subtitle">
+      这个页面按照“邻接矩阵、邻接表、邻接多重表、十字链表、DFS、BFS”的顺序逐步演示。
+      你可以手动切换步骤，也可以自动播放；右侧会同步显示结构说明、表格、链式关系和学习要点。
+    </div>
+  </header>
+
+  <section class="top-grid">
+    <div class="card">
+      <div class="hd">
+        <h2>课程目标</h2>
+        <span class="tag">适合配合图片与 C++ 代码一起学习</span>
+      </div>
+      <div class="bd">
+        <div class="kpi-grid">
+          <div class="kpi"><div class="label">覆盖结构</div><div class="value">4 种图存储结构</div></div>
+          <div class="kpi"><div class="label">覆盖遍历</div><div class="value">DFS + BFS</div></div>
+          <div class="kpi"><div class="label">图类型</div><div class="value">有向图 + 无向图</div></div>
+          <div class="kpi"><div class="label">输出风格</div><div class="value">全部中文提示</div></div>
+        </div>
+        <div style="margin-top:12px;color:var(--muted);line-height:1.9;font-size:14px;">
+          <b style="color:#fff;">学习顺序建议：</b>
+          先理解“图为什么需要不同存储结构”，再看“每种结构如何表达边”，最后对比 DFS / BFS 在不同结构上的统一性。
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <h2>图片中的适用性总结</h2>
+        <span class="tag">邻接矩阵 / 邻接表 / 邻接多重表 / 十字链表</span>
+      </div>
+      <div class="bd">
+        <div class="table-wrap" id="appTable"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="controls">
+    <select id="sceneSelect" class="select"></select>
+    <button class="btn" id="prevBtn">上一步</button>
+    <button class="btn primary" id="playBtn">自动播放</button>
+    <button class="btn" id="nextBtn">下一步</button>
+    <button class="btn" id="resetBtn">重置</button>
+    <div class="range-wrap">
+      <span class="range-label">播放速度</span>
+      <input id="speedRange" type="range" min="500" max="2500" step="100" value="1400" />
+      <span class="range-label" id="speedText">1.4 秒/步</span>
+    </div>
+  </section>
+
+  <section class="main-grid">
+    <div class="card graph-box">
+      <div class="hd">
+        <div>
+          <h2 class="scene-title" id="sceneTitle">加载中...</h2>
+          <p class="scene-desc" id="sceneDesc"></p>
+        </div>
+        <span class="tag" id="sceneTag">步骤 1 / 1</span>
+      </div>
+      <div class="bd" style="padding-top: 14px;">
+        <div class="graph-stage">
+          <svg id="graphSvg" viewBox="0 0 820 560" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <div class="legend">
+          <span><i></i> 当前高亮</span>
+          <span><i style="background: var(--accent-2);"></i> 已访问 / 已处理</span>
+          <span><i style="background: var(--warn);"></i> 当前考虑的边</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card detail-box">
+      <div class="panel">
+        <h3>当前步骤说明</h3>
+        <p id="stepExplain">-</p>
+      </div>
+      <div class="panel">
+        <h3>学习提示</h3>
+        <ul id="tipsList"></ul>
+      </div>
+      <div class="panel" id="detailPanel">
+        <h3>结构展开区</h3>
+        <div id="detailContent"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="log-box">
+    <div class="card">
+      <div class="hd">
+        <h2>步骤导航</h2>
+        <span class="tag">点击任一步骤即可跳转</span>
+      </div>
+      <div class="bd">
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="hd">
+        <h2>学习备注</h2>
+        <span class="tag">建议与 C++ 示例一起看</span>
+      </div>
+      <div class="bd footnote">
+        1. 邻接矩阵最适合“判断某条边是否存在”。<br/>
+        2. 邻接表更适合稀疏图，也更方便做 DFS / BFS。<br/>
+        3. 邻接多重表只用于无向图，一条边只存一个边结点，能同时挂到两个端点上。<br/>
+        4. 十字链表只用于有向图，一个弧结点同时链接“出边链”和“入边链”。<br/>
+        5. 遍历的本质是：不断找到“当前顶点的邻接点”，然后按照 DFS 或 BFS 的规则访问它们。
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const vertices = [
+      { label: 'A', x: 150, y: 100 },
+      { label: 'B', x: 335, y: 70 },
+      { label: 'C', x: 515, y: 100 },
+      { label: 'D', x: 620, y: 250 },
+      { label: 'E', x: 430, y: 390 },
+      { label: 'F', x: 220, y: 370 },
+    ];
+
+    const undirectedEdges = [
+      { u: 0, v: 1, w: 1 },
+      { u: 0, v: 2, w: 2 },
+      { u: 1, v: 3, w: 3 },
+      { u: 1, v: 4, w: 4 },
+      { u: 2, v: 5, w: 5 },
+      { u: 4, v: 5, w: 6 },
+    ];
+
+    const directedEdges = [
+      { u: 0, v: 1, w: 1 },
+      { u: 0, v: 2, w: 1 },
+      { u: 1, v: 3, w: 1 },
+      { u: 2, v: 3, w: 1 },
+      { u: 3, v: 4, w: 1 },
+      { u: 4, v: 5, w: 1 },
+      { u: 5, v: 2, w: 1 },
+    ];
+
+    const matrixUndirected = buildMatrix(undirectedEdges, false);
+    const matrixDirected = buildMatrix(directedEdges, true);
+    const listUndirected = buildList(undirectedEdges, false);
+    const listDirected = buildList(directedEdges, true);
+    const multiList = buildMultiList(undirectedEdges);
+    const orthogonal = buildOrthogonal(directedEdges);
+
+    const scenes = [
+      {
+        title: '总览：先看图片中的适用性表',
+        type: 'intro',
+        graph: 'none',
+        explain: '图的存储结构并不是“越高级越好”，而是要看图是有向还是无向、边多还是边少、是否经常判断某条边是否存在。',
+        tips: [
+          '邻接矩阵和邻接表都可以用于有向图和无向图。',
+          '邻接多重表适合无向图，因为一条边需要同时挂到两个顶点上。',
+          '十字链表适合有向图，因为它同时维护出边和入边。'
+        ],
+        detail: renderIntroContent,
+        activeNodes: [],
+        activeEdges: []
+      },
+      {
+        title: '邻接矩阵：无向图',
+        type: 'matrix',
+        graph: 'undirected',
+        explain: '矩阵中的行与列都代表顶点；若 i 行 j 列有值，说明顶点 i 和顶点 j 之间存在边。无向图的矩阵天然对称。',
+        tips: ['优点：判断边是否存在非常快。', '缺点：当顶点很多但边很少时，空间浪费明显。'],
+        detail: () => renderMatrixContent(matrixUndirected, ['A-B', 'A-C'], false),
+        activeNodes: [0, 1, 2],
+        activeEdges: [0, 1]
+      },
+      {
+        title: '邻接表：无向图',
+        type: 'list',
+        graph: 'undirected',
+        explain: '每个顶点后面挂一条链表，链表中存放它所有的邻接点。无向图中每条边会在两个顶点的链表里各出现一次。',
+        tips: ['优点：遍历邻接点很方便，适合稀疏图。', '缺点：判断某条边是否存在，不如邻接矩阵直接。'],
+        detail: () => renderListContent(listUndirected, 1, false),
+        activeNodes: [1],
+        activeEdges: [1, 2]
+      },
+      {
+        title: '邻接多重表：无向图',
+        type: 'multilist',
+        graph: 'undirected',
+        explain: '一条无向边只存一个边结点，同时通过 ilink / jlink 挂到两个端点上。这样既节约重复存储，又方便从任一端点找到相关边。',
+        tips: ['这是无向图专用结构。', '适合需要频繁删除边、修改边的场景。'],
+        detail: () => renderMultiListContent(multiList, 3),
+        activeNodes: [4, 5],
+        activeEdges: [4, 5]
+      },
+      {
+        title: '邻接矩阵：有向图',
+        type: 'matrix',
+        graph: 'directed',
+        explain: '有向图中，矩阵的行表示出发点，列表示到达点。若 i 到 j 有边，就在 i 行 j 列填值。',
+        tips: ['矩阵不要求对称，因为有向边可能单向存在。', '能快速判断“i 是否能直接到 j”。'],
+        detail: () => renderMatrixContent(matrixDirected, ['A→B', 'A→C', 'D→E'], true),
+        activeNodes: [0, 1, 2, 3, 4],
+        activeEdges: [0, 1, 4]
+      },
+      {
+        title: '邻接表：有向图',
+        type: 'list',
+        graph: 'directed',
+        explain: '有向图的邻接表一般只记录“出边”。也就是说，从某个顶点出发，能直接到达哪些顶点，一眼就能看出来。',
+        tips: ['如果需要同时查入边和出边，可以考虑十字链表。', '很多 DFS / BFS 教学和题目都默认按邻接表思路来做。'],
+        detail: () => renderListContent(listDirected, 0, true),
+        activeNodes: [0],
+        activeEdges: [0, 1]
+      },
+      {
+        title: '十字链表：有向图',
+        type: 'orthogonal',
+        graph: 'directed',
+        explain: '十字链表让每个弧结点同时加入“出边链”和“入边链”。这样既可以沿着出边找后继，也可以沿着入边找前驱。',
+        tips: ['这是有向图专用结构。', '它比单纯邻接表更适合需要同时处理入度和出度的算法。'],
+        detail: () => renderOrthogonalContent(orthogonal, 2),
+        activeNodes: [2, 3],
+        activeEdges: [3, 6]
+      },
+      {
+        title: '遍历演示：DFS（无向图，邻接表视角）',
+        type: 'traverse',
+        graph: 'undirected',
+        explain: 'DFS 的核心是“先深后广”。只要能枚举当前顶点的邻接点，不管是矩阵、邻接表还是多重表，都可以实现 DFS。',
+        tips: ['实现 DFS 时，常常使用递归；也可以用显式栈。', '图中有环时必须设置 visited 数组。'],
+        detail: () => renderTraverseContent('DFS', 'A → B → D → E → F → C', ['A', 'B', 'D'], ['A-B', 'B-D', 'B-E', 'E-F', 'F-C', 'A-C']),
+        activeNodes: [0, 1, 3, 4, 5, 2],
+        activeEdges: [0, 2, 4, 5, 1]
+      },
+      {
+        title: '遍历演示：BFS（有向图，十字链表视角）',
+        type: 'traverse',
+        graph: 'directed',
+        explain: 'BFS 的核心是“先广后深”。队列会先收集当前层的所有邻接点，再逐层向外扩展。',
+        tips: ['BFS 适合求无权图最短路。', '十字链表可以很好地支持“从顶点找出边”的遍历。'],
+        detail: () => renderTraverseContent('BFS', 'A → B → C → D → E → F', ['A', 'B', 'C'], ['A→B', 'A→C', 'B→D', 'C→D', 'D→E', 'E→F', 'F→C']),
+        activeNodes: [0, 1, 2, 3],
+        activeEdges: [0, 1, 2, 3]
+      }
+    ];
+
+    const state = {
+      index: 0,
+      playing: false,
+      timer: null,
+      speed: 1400
+    };
+
+    const sceneSelect = document.getElementById('sceneSelect');
+    const prevBtn = document.getElementById('prevBtn');
+    const playBtn = document.getElementById('playBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const speedRange = document.getElementById('speedRange');
+    const speedText = document.getElementById('speedText');
+    const sceneTitle = document.getElementById('sceneTitle');
+    const sceneDesc = document.getElementById('sceneDesc');
+    const sceneTag = document.getElementById('sceneTag');
+    const stepExplain = document.getElementById('stepExplain');
+    const tipsList = document.getElementById('tipsList');
+    const detailContent = document.getElementById('detailContent');
+    const graphSvg = document.getElementById('graphSvg');
+    const timeline = document.getElementById('timeline');
+    const appTable = document.getElementById('appTable');
+
+    function buildMatrix(edges, directed) {
+      const n = vertices.length;
+      const inf = '∞';
+      const matrix = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => i === j ? '0' : inf));
+      for (const e of edges) {
+        matrix[e.u][e.v] = String(e.w);
+        if (!directed) matrix[e.v][e.u] = String(e.w);
+      }
+      return matrix;
+    }
+
+    function buildList(edges, directed) {
+      const adj = Array.from({ length: vertices.length }, () => []);
+      edges.forEach((e, index) => {
+        adj[e.u].push({ to: e.v, w: e.w, edgeIndex: index });
+        if (!directed) adj[e.v].push({ to: e.u, w: e.w, edgeIndex: index });
+      });
+      return adj;
+    }
+
+    function buildMultiList(edges) {
+      const vertexFirst = Array.from({ length: vertices.length }, () => -1);
+      const edgeNodes = [];
+      edges.forEach((e) => {
+        const index = edgeNodes.length;
+        edgeNodes.push({ ivex: e.u, jvex: e.v, ilink: vertexFirst[e.u], jlink: vertexFirst[e.v], w: e.w });
+        vertexFirst[e.u] = index;
+        vertexFirst[e.v] = index;
+      });
+      return { vertexFirst, edgeNodes };
+    }
+
+    function buildOrthogonal(edges) {
+      const vertexFirstOut = Array.from({ length: vertices.length }, () => -1);
+      const vertexFirstIn = Array.from({ length: vertices.length }, () => -1);
+      const arcNodes = [];
+      edges.forEach((e) => {
+        const index = arcNodes.length;
+        arcNodes.push({ tail: e.u, head: e.v, tlink: vertexFirstOut[e.u], hlink: vertexFirstIn[e.v], w: e.w });
+        vertexFirstOut[e.u] = index;
+        vertexFirstIn[e.v] = index;
+      });
+      return { vertexFirstOut, vertexFirstIn, arcNodes };
+    }
+
+    function renderIntroContent() {
+      return `
+        <h3>图片里的适用性结论</h3>
+        <p>邻接矩阵和邻接表对有向图、无向图都适用；邻接多重表只适合无向图；十字链表只适合有向图。</p>
+        <ul>
+          <li>如果你常常要判断“有没有边”，优先考虑邻接矩阵。</li>
+          <li>如果你常常要遍历某个顶点的邻接点，优先考虑邻接表。</li>
+          <li>如果是无向图，并且想避免一条边存两次，可以考虑邻接多重表。</li>
+          <li>如果是有向图，并且要同时关心入边和出边，可以考虑十字链表。</li>
+        </ul>`;
+    }
+
+    function renderMatrixContent(matrix, highlightPairs, directed) {
+      const header = vertices.map(v => `<th>${v.label}</th>`).join('');
+      const rows = matrix.map((row, i) => {
+        const cells = row.map((cell, j) => {
+          const pairName = directed ? `${vertices[i].label}→${vertices[j].label}` : `${vertices[i].label}-${vertices[j].label}`;
+          const cls = highlightPairs.includes(pairName) ? 'highlight' : '';
+          return `<td class="${cls}">${cell}</td>`;
+        }).join('');
+        return `<tr><th class="${highlightPairs.some(x => x.startsWith(vertices[i].label)) ? 'highlight' : ''}">${vertices[i].label}</th>${cells}</tr>`;
+      }).join('');
+      return `
+        <h3>矩阵表格</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>顶点</th>${header}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <p style="margin-top:10px;color:var(--muted);">说明：矩阵中的一格可以直接表示一条边是否存在，甚至还能存权值。</p>
+      `;
+    }
+
+    function renderListContent(list, activeVertex, directed) {
+      const rows = list.map((arr, i) => {
+        const chain = arr.length
+          ? arr.map(item => `${vertices[item.to].label}(${item.w})`).join(' <span class="arrow">→</span> ')
+          : '∅';
+        return `
+          <div class="list-row ${i === activeVertex ? 'active' : ''}">
+            <div class="vertex-badge">${vertices[i].label}</div>
+            <div class="chain">${vertices[i].label} ${directed ? '的出边' : '的邻接点'}：${chain}</div>
+          </div>
+        `;
+      }).join('');
+      return `
+        <h3>链式展开</h3>
+        <div class="list-grid">${rows}</div>
+        <p style="margin-top:10px;color:var(--muted);">说明：链表里存的是顶点的邻接点；无向图通常会出现“双向各一份”。</p>
+      `;
+    }
+
+    function renderMultiListContent(multi, activeEdgeIndex) {
+      const vertexRows = vertices.map((v, i) => {
+        const first = multi.vertexFirst[i] === -1 ? '∅' : String(multi.vertexFirst[i]);
+        return `<tr><td>${i}</td><td>${v.label}</td><td>${first}</td></tr>`;
+      }).join('');
+      const edgeRows = multi.edgeNodes.map((e, i) => {
+        const active = i === activeEdgeIndex ? 'highlight' : '';
+        return `<tr><td class="${active}">${i}</td><td class="${active}">${vertices[e.ivex].label}-${vertices[e.jvex].label}</td><td class="${active}">${e.w}</td><td class="${active}">${e.ilink === -1 ? '∅' : e.ilink}</td><td class="${active}">${e.jlink === -1 ? '∅' : e.jlink}</td></tr>`;
+      }).join('');
+      return `
+        <h3>邻接多重表拆解</h3>
+        <p>下面左侧是顶点表，右侧是边结点表。每一条无向边只出现一次，但能同时挂在两个顶点上。</p>
+        <div class="table-wrap">
+          <table style="margin-bottom:12px;">
+            <thead><tr><th>序号</th><th>顶点</th><th>firstedge</th></tr></thead>
+            <tbody>${vertexRows}</tbody>
+          </table>
+          <table>
+            <thead><tr><th>序号</th><th>边</th><th>权值</th><th>ilink</th><th>jlink</th></tr></thead>
+            <tbody>${edgeRows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderOrthogonalContent(orth, activeArcIndex) {
+      const vertexRows = vertices.map((v, i) => {
+        const out = orth.vertexFirstOut[i] === -1 ? '∅' : String(orth.vertexFirstOut[i]);
+        const inn = orth.vertexFirstIn[i] === -1 ? '∅' : String(orth.vertexFirstIn[i]);
+        return `<tr><td>${i}</td><td>${v.label}</td><td>${out}</td><td>${inn}</td></tr>`;
+      }).join('');
+      const arcRows = orth.arcNodes.map((a, i) => {
+        const active = i === activeArcIndex ? 'highlight' : '';
+        return `<tr><td class="${active}">${i}</td><td class="${active}">${vertices[a.tail].label}→${vertices[a.head].label}</td><td class="${active}">${a.w}</td><td class="${active}">${a.tlink === -1 ? '∅' : a.tlink}</td><td class="${active}">${a.hlink === -1 ? '∅' : a.hlink}</td></tr>`;
+      }).join('');
+      return `
+        <h3>十字链表拆解</h3>
+        <p>十字链表的核心是：同一个弧结点同时属于“出边链”和“入边链”。</p>
+        <div class="table-wrap">
+          <table style="margin-bottom:12px;">
+            <thead><tr><th>序号</th><th>顶点</th><th>firstout</th><th>firstin</th></tr></thead>
+            <tbody>${vertexRows}</tbody>
+          </table>
+          <table>
+            <thead><tr><th>序号</th><th>弧</th><th>权值</th><th>tlink</th><th>hlink</th></tr></thead>
+            <tbody>${arcRows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderTraverseContent(kind, sequence, visitedLabels, edgesText) {
+      return `
+        <h3>${kind} 讲解</h3>
+        <p>访问序列：<b style="color:var(--accent-2)">${sequence}</b></p>
+        <p>当前已访问：${visitedLabels.map(x => `<span class="tag" style="margin-right:6px;">${x}</span>`).join('')}</p>
+        <ul>
+          <li>遍历的关键不是“结构长什么样”，而是“能不能方便地找到邻接点”。</li>
+          <li>这就是为什么图的不同存储结构都可以配合 DFS / BFS。</li>
+          <li>示意边：${edgesText.join('、')}</li>
+        </ul>
+      `;
+    }
+
+    function renderAppTable() {
+      appTable.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>图的类型</th>
+              <th>邻接矩阵</th>
+              <th>邻接表</th>
+              <th>邻接多重表</th>
+              <th>十字链表</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th>有向图</th><td>√</td><td>√</td><td>×</td><td>√</td></tr>
+            <tr><th>无向图</th><td>√</td><td>√</td><td>√</td><td>×</td></tr>
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderScene(index) {
+      const scene = scenes[index];
+      sceneTitle.textContent = scene.title;
+      sceneDesc.textContent = scene.explain;
+      sceneTag.textContent = `步骤 ${index + 1} / ${scenes.length}`;
+      stepExplain.textContent = scene.explain;
+      tipsList.innerHTML = scene.tips.map(t => `<li>${t}</li>`).join('');
+      detailContent.innerHTML = scene.detail();
+      drawGraph(scene);
+      updateTimeline();
+      sceneSelect.value = String(index);
+    }
+
+    function drawGraph(scene) {
+      if (scene.graph === 'none') {
+        graphSvg.innerHTML = `
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.75)"></path>
+            </marker>
+          </defs>
+          <text x="410" y="220" text-anchor="middle" fill="#e8eefc" font-size="28" font-weight="700">图的存储结构与遍历</text>
+          <text x="410" y="265" text-anchor="middle" fill="#9fb0d1" font-size="17">邻接矩阵 · 邻接表 · 邻接多重表 · 十字链表</text>
+          <g transform="translate(150, 320)">
+            <rect x="0" y="0" width="520" height="120" rx="18" fill="rgba(90,215,255,0.08)" stroke="rgba(90,215,255,0.22)" />
+            <text x="260" y="35" text-anchor="middle" fill="#5ad7ff" font-size="20" font-weight="700">学习核心</text>
+            <text x="260" y="70" text-anchor="middle" fill="#e8eefc" font-size="15">“如何存边” + “如何找邻接点”</text>
+            <text x="260" y="96" text-anchor="middle" fill="#e8eefc" font-size="15">这两个问题决定了 DFS / BFS 的实现方式。</text>
+          </g>`;
+        return;
+      }
+
+      const edgeSource = scene.graph === 'undirected' ? undirectedEdges : directedEdges;
+      const activeNodes = new Set(scene.activeNodes || []);
+      const activeEdges = new Set(scene.activeEdges || []);
+
+      const edgeSvg = edgeSource.map((e, i) => {
+        const a = vertices[e.u];
+        const b = vertices[e.v];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const offsetX = (dx / len) * 28;
+        const offsetY = (dy / len) * 28;
+        const x1 = a.x + offsetX;
+        const y1 = a.y + offsetY;
+        const x2 = b.x - offsetX;
+        const y2 = b.y - offsetY;
+        const cls = `edge ${scene.graph === 'directed' ? 'directed' : ''} ${activeEdges.has(i) ? 'active' : ''} ${activeEdges.size && !activeEdges.has(i) ? 'dim' : ''}`;
+        const mx = (x1 + x2) / 2;
+        const my = (y1 + y2) / 2;
+        return `
+          <g>
+            <line class="${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" />
+            <text x="${mx}" y="${my - 8}" fill="#ffbf69" font-size="13" font-weight="700" text-anchor="middle">${scene.graph === 'directed' ? `${vertices[e.u].label}→${vertices[e.v].label}` : `${vertices[e.u].label}-${vertices[e.v].label}`}</text>
+          </g>
+        `;
+      }).join('');
+
+      const nodeSvg = vertices.map((v, i) => {
+        const cls = `node ${activeNodes.has(i) ? 'active' : ''}`;
+        return `
+          <g class="${cls}" transform="translate(${v.x}, ${v.y})">
+            <circle r="24"></circle>
+            <text x="0" y="1">${v.label}</text>
+          </g>
+        `;
+      }).join('');
+
+      graphSvg.innerHTML = `
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.75)"></path>
+          </marker>
+        </defs>
+        ${edgeSvg}
+        ${nodeSvg}
+      `;
+    }
+
+    function updateTimeline() {
+      timeline.innerHTML = scenes.map((scene, i) => {
+        return `<button class="step-chip ${i === state.index ? 'active' : ''}" data-index="${i}">${i + 1}. ${scene.title}</button>`;
+      }).join('');
+      timeline.querySelectorAll('.step-chip').forEach(btn => {
+        btn.addEventListener('click', () => gotoStep(Number(btn.dataset.index)));
+      });
+    }
+
+    function gotoStep(index) {
+      state.index = Math.max(0, Math.min(scenes.length - 1, index));
+      renderScene(state.index);
+    }
+
+    function play() {
+      if (state.playing) return;
+      state.playing = true;
+      playBtn.textContent = '暂停播放';
+      state.timer = setInterval(() => {
+        if (state.index >= scenes.length - 1) {
+          stop();
+          return;
+        }
+        gotoStep(state.index + 1);
+      }, state.speed);
+    }
+
+    function stop() {
+      state.playing = false;
+      playBtn.textContent = '自动播放';
+      if (state.timer) clearInterval(state.timer);
+      state.timer = null;
+    }
+
+    function togglePlay() {
+      if (state.playing) stop(); else play();
+    }
+
+    sceneSelect.innerHTML = scenes.map((scene, i) => `<option value="${i}">${i + 1}. ${scene.title}</option>`).join('');
+    sceneSelect.addEventListener('change', e => gotoStep(Number(e.target.value)));
+    prevBtn.addEventListener('click', () => gotoStep(state.index - 1));
+    nextBtn.addEventListener('click', () => gotoStep(state.index + 1));
+    resetBtn.addEventListener('click', () => { stop(); gotoStep(0); });
+    playBtn.addEventListener('click', togglePlay);
+    speedRange.addEventListener('input', e => {
+      state.speed = Number(e.target.value);
+      speedText.textContent = `${(state.speed / 1000).toFixed(1)} 秒/步`;
+      if (state.playing) {
+        stop();
+        play();
+      }
+    });
+
+    renderAppTable();
+    renderScene(0);
+    updateTimeline();
+    speedText.textContent = `${(state.speed / 1000).toFixed(1)} 秒/步`;
+  </script>
+</body>
+</html>
+
