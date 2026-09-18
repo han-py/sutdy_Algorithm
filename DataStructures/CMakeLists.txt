@@ -52,3 +52,7 @@ add_executable(WD_03_Tree_02_Traverse_TreeTraversalLearning_Compare
 target_compile_options(WD_03_Tree_02_Traverse_TreeTraversalLearning_Compare PRIVATE -g0)
 target_link_libraries(WD_03_Tree_02_Traverse_TreeTraversalLearning_Compare)
 
+add_executable(WD_04_Graph_03_DepthFirstTraversal_dfs_learning
+        WangDao_2027/04_Graph/03_DepthFirstTraversal/dfs_learning.cpp)
+target_compile_options(WD_04_Graph_03_DepthFirstTraversal_dfs_learning PRIVATE -g0)
+target_link_libraries(WD_04_Graph_03_DepthFirstTraversal_dfs_learning)
