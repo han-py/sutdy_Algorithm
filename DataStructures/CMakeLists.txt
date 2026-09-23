@@ -66,3 +66,8 @@ add_executable(WD_04_Graph_05_ShortestPath_shortest_path_learning
         WangDao_2027/04_Graph/05_ShortestPath/shortest_path_learning.cpp)
 target_compile_options(WD_04_Graph_05_ShortestPath_shortest_path_learning PRIVATE -g0)
 target_link_libraries(WD_04_Graph_05_ShortestPath_shortest_path_learning)
+
+add_executable(WD_04_Graph_06_MinimumSpanningTree_minimum_spanning_tree_learning
+        WangDao_2027/04_Graph/06_MinimumSpanningTree/minimum_spanning_tree_learning.cpp)
+target_compile_options(WD_04_Graph_06_MinimumSpanningTree_minimum_spanning_tree_learning PRIVATE -g0)
+target_link_libraries(WD_04_Graph_06_MinimumSpanningTree_minimum_spanning_tree_learning)
