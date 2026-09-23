@@ -61,3 +61,8 @@ add_executable(WD_04_Graph_04_BreadthFirstSearch_bfs_learning
         WangDao_2027/04_Graph/04_BreadthFirstSearch/bfs_learning.cpp)
 target_compile_options(WD_04_Graph_04_BreadthFirstSearch_bfs_learning PRIVATE -g0)
 target_link_libraries(WD_04_Graph_04_BreadthFirstSearch_bfs_learning)
+
+add_executable(WD_04_Graph_05_ShortestPath_shortest_path_learning
+        WangDao_2027/04_Graph/05_ShortestPath/shortest_path_learning.cpp)
+target_compile_options(WD_04_Graph_05_ShortestPath_shortest_path_learning PRIVATE -g0)
+target_link_libraries(WD_04_Graph_05_ShortestPath_shortest_path_learning)
