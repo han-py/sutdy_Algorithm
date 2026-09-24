@@ -76,3 +76,8 @@ add_executable(WD_04_Graph_07_TopologicalSort_topological_sort_learning
         WangDao_2027/04_Graph/07_TopologicalSort/topological_sort_learning.cpp)
 target_compile_options(WD_04_Graph_07_TopologicalSort_topological_sort_learning PRIVATE -g0)
 target_link_libraries(WD_04_Graph_07_TopologicalSort_topological_sort_learning)
+
+add_executable(WD_04_Graph_08_CriticalPath_critical_path_learning
+        WangDao_2027/04_Graph/08_CriticalPath/critical_path_learning.cpp)
+target_compile_options(WD_04_Graph_08_CriticalPath_critical_path_learning PRIVATE -g0)
+target_link_libraries(WD_04_Graph_08_CriticalPath_critical_path_learning)
