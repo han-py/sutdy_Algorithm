@@ -81,3 +81,84 @@ add_executable(WD_04_Graph_08_CriticalPath_critical_path_learning
         WangDao_2027/04_Graph/08_CriticalPath/critical_path_learning.cpp)
 target_compile_options(WD_04_Graph_08_CriticalPath_critical_path_learning PRIVATE -g0)
 target_link_libraries(WD_04_Graph_08_CriticalPath_critical_path_learning)
+
+add_executable(Foundation_Utilities
+        DataStructuresStudyPack/00_Foundation/Foundation_Utilities.cpp)
+
+add_executable(Linear_Structures
+        DataStructuresStudyPack/01_Linear_Structures/Linear_Structures.cpp)
+add_executable(Linear_Array
+        DataStructuresStudyPack/01_Linear_Structures/Array.cpp)
+add_executable(Linear_LinkedList
+        DataStructuresStudyPack/01_Linear_Structures/LinkedList.cpp)
+add_executable(Linear_Stack
+        DataStructuresStudyPack/01_Linear_Structures/Stack.cpp)
+add_executable(Linear_Queue
+        DataStructuresStudyPack/01_Linear_Structures/Queue.cpp)
+add_executable(Linear_Deque
+        DataStructuresStudyPack/01_Linear_Structures/Deque.cpp)
+add_executable(Linear_String
+        DataStructuresStudyPack/01_Linear_Structures/String.cpp)
+
+add_executable(Tree_Structures
+        DataStructuresStudyPack/02_Tree_Structures/Tree_Structures.cpp)
+add_executable(Tree_BinaryTree
+        DataStructuresStudyPack/02_Tree_Structures/BinaryTree.cpp)
+add_executable(Tree_BinarySearchTree
+        DataStructuresStudyPack/02_Tree_Structures/BinarySearchTree.cpp)
+add_executable(Tree_BalancedTree
+        DataStructuresStudyPack/02_Tree_Structures/BalancedTree.cpp)
+add_executable(Tree_Heap_And_PriorityQueue
+        DataStructuresStudyPack/02_Tree_Structures/Heap_And_PriorityQueue.cpp)
+add_executable(Tree_Trie
+        DataStructuresStudyPack/02_Tree_Structures/Trie.cpp)
+add_executable(Tree_DisjointSetUnion
+        DataStructuresStudyPack/02_Tree_Structures/DisjointSetUnion.cpp)
+
+add_executable(Graph_Structures
+        DataStructuresStudyPack/03_Graph_Structures/Graph_Structures.cpp)
+add_executable(Graph_Representation
+        DataStructuresStudyPack/03_Graph_Structures/Graph_Representation.cpp)
+add_executable(Graph_DFS
+        DataStructuresStudyPack/03_Graph_Structures/DFS.cpp)
+add_executable(Graph_BFS
+        DataStructuresStudyPack/03_Graph_Structures/BFS.cpp)
+add_executable(Graph_TopologicalSort
+        DataStructuresStudyPack/03_Graph_Structures/TopologicalSort.cpp)
+add_executable(Graph_ShortestPath
+        DataStructuresStudyPack/03_Graph_Structures/ShortestPath.cpp)
+add_executable(Graph_MinimumSpanningTree
+        DataStructuresStudyPack/03_Graph_Structures/MinimumSpanningTree.cpp)
+add_executable(Graph_AdvancedAlgorithms
+        DataStructuresStudyPack/03_Graph_Structures/Advanced_Graph_Algorithms.cpp)
+
+add_executable(Hash_And_Map
+        DataStructuresStudyPack/04_Hash_And_Map/Hash_And_Map.cpp)
+add_executable(Hash_HashTable
+        DataStructuresStudyPack/04_Hash_And_Map/HashTable.cpp)
+add_executable(Hash_HashSet
+        DataStructuresStudyPack/04_Hash_And_Map/HashSet.cpp)
+add_executable(Hash_HashMap
+        DataStructuresStudyPack/04_Hash_And_Map/HashMap.cpp)
+add_executable(Hash_BloomFilter
+        DataStructuresStudyPack/04_Hash_And_Map/BloomFilter.cpp)
+
+add_executable(Advanced_Data_Structures
+        DataStructuresStudyPack/05_Advanced_Data_Structures/Advanced_Data_Structures.cpp)
+add_executable(Advanced_FenwickTree
+        DataStructuresStudyPack/05_Advanced_Data_Structures/FenwickTree.cpp)
+add_executable(Advanced_SegmentTree
+        DataStructuresStudyPack/05_Advanced_Data_Structures/SegmentTree.cpp)
+add_executable(Advanced_SkipList
+        DataStructuresStudyPack/05_Advanced_Data_Structures/SkipList.cpp)
+add_executable(Advanced_BTree_And_BPlusTree
+        DataStructuresStudyPack/05_Advanced_Data_Structures/BTree_And_BPlusTree.cpp)
+add_executable(Advanced_SuffixStructures
+        DataStructuresStudyPack/05_Advanced_Data_Structures/SuffixStructures.cpp)
+
+add_executable(Linkage_Examples
+        DataStructuresStudyPack/06_Algorithm_DataStructure_Linkage/Linkage_Examples.cpp)
+
+add_executable(Master_Templates
+        DataStructuresStudyPack/07_Review_Checklists/Master_Templates.cpp)
+
